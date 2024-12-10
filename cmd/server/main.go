@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/murathanje/birthday_tracking_backend/internal/api"
 	"github.com/murathanje/birthday_tracking_backend/internal/config"
+	"github.com/murathanje/birthday_tracking_backend/internal/handler"
+	"github.com/murathanje/birthday_tracking_backend/internal/middleware"
 	"github.com/murathanje/birthday_tracking_backend/internal/repository"
 	"github.com/murathanje/birthday_tracking_backend/internal/service"
 
@@ -16,39 +18,39 @@ import (
 )
 
 func main() {
-	// Load configuration
+	gin.SetMode(gin.ReleaseMode)
 	cfg := config.LoadConfig()
 
-	// Setup database connection
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
-	
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
+			cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Initialize repository, service, and handler
 	birthdayRepo := repository.NewBirthdayRepository(db)
 	birthdayService := service.NewBirthdayService(birthdayRepo)
-	birthdayHandler := api.NewBirthdayHandler(birthdayService)
+	birthdayHandler := handler.NewBirthdayHandler(birthdayService)
 
-	// Initialize router
-	router := gin.Default()
+	router := gin.New()
+	router.SetTrustedProxies([]string{"127.0.0.1"})
 
-	// Register routes
+	router.Use(middleware.Logger())
+	router.Use(middleware.Recovery())
+	router.Use(middleware.CORS())
+
 	birthdayHandler.RegisterRoutes(router)
 
-	// Health check
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "healthy",
+			"status":  "healthy",
+			"version": "1.0.0",
 		})
 	})
 
-	// Start server
 	serverAddr := fmt.Sprintf(":%d", cfg.ServerPort)
-	log.Printf("Server starting on %s", serverAddr)
+	log.Printf("Server starting on %s in %s mode", serverAddr, os.Getenv("GIN_MODE"))
 	if err := router.Run(serverAddr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

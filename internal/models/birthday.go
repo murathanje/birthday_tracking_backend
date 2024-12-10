@@ -1,12 +1,17 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Birthday struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Name      string    `json:"name" binding:"required"`
-	BirthDate time.Time `json:"birth_date" binding:"required"`
-	Notes     string    `json:"notes"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          uint           `gorm:"primaryKey" json:"id"`
+	Name        string         `gorm:"not null" json:"name"`
+	BirthDate   time.Time      `gorm:"not null" json:"birth_date"`
+	Description string         `json:"description"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 } 
