@@ -558,123 +558,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/categories": {
-            "get": {
-                "description": "Get a list of all birthday categories with their icons\nEach category includes an ID, name, and an emoji icon\nUse this endpoint to populate category dropdowns or lists",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "categories"
-                ],
-                "summary": "Get all categories",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/categories/name/{name}": {
-            "get": {
-                "description": "Get a category by its name (e.g., 'family', 'friends', etc.)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "categories"
-                ],
-                "summary": "Get a category by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Category name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/categories/{id}": {
-            "get": {
-                "description": "Get a category by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "categories"
-                ],
-                "summary": "Get a category by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Category ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/login": {
             "post": {
                 "description": "Authenticate user and return JWT token for accessing protected endpoints\nThe returned token should be included in the Authorization header as \"Bearer \u003ctoken\u003e\"",
@@ -914,10 +797,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "05-15"
                 },
-                "category_id": {
-                    "description": "@Description Category ID for grouping birthdays",
+                "category": {
+                    "description": "@Description Category of the birthday",
                     "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                    "example": "Family"
                 },
                 "created_at": {
                     "description": "@Description When the record was created",
@@ -949,33 +832,12 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_murathanje_birthday_tracking_backend_internal_models.Category": {
-            "description": "Category model for grouping birthdays",
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "icon": {
-                    "type": "string",
-                    "example": "👨‍👩‍👧‍👦"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Family"
-                }
-            }
-        },
         "github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest": {
             "description": "Request model for creating a birthday record",
             "type": "object",
             "required": [
                 "birth_date",
-                "category_id",
+                "category",
                 "name"
             ],
             "properties": {
@@ -984,10 +846,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "05-15"
                 },
-                "category_id": {
-                    "description": "@Description Category ID for grouping birthdays",
+                "category": {
+                    "description": "@Description Category of the birthday (e.g., \"Family\", \"Friend\", \"Work\")",
                     "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                    "example": "Family"
                 },
                 "name": {
                     "description": "@Description Name of the person",
@@ -1153,12 +1015,8 @@ const docTemplate = `{
             "name": "admin"
         },
         {
-            "description": "Birthday management endpoints (requires JWT authentication)",
+            "description": "Birthday management endpoints with string-based categorization (requires JWT authentication)",
             "name": "birthdays"
-        },
-        {
-            "description": "Category management endpoints (requires authentication)",
-            "name": "categories"
         }
     ]
 }`
@@ -1170,7 +1028,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
 	Title:            "Birthday Tracking API",
-	Description:      "A birthday tracking service API in Go using Gin framework.\nFeatures:\n- User management with JWT authentication for user operations\n- API Key authentication for admin operations\n- Birthday tracking with categories\n- Category management with icons\n- Upcoming birthdays tracking\n\nAuthentication:\n1. For Users:\n- Register a new account using /api/v1/register\n- Login with your credentials at /api/v1/login to get a JWT token\n- Use the token in the Authorization header for protected endpoints\n- Format: \"Bearer <your_jwt_token>\"\n2. For Admins:\n- Use API Key in the X-API-Key header for admin endpoints\n- The API Key should be set in your .env file",
+	Description:      "A birthday tracking service API in Go using Gin framework.\nFeatures:\n- User management with JWT authentication for user operations\n- API Key authentication for admin operations\n- Birthday tracking with simple categorization (string-based)\n- Example categories: \"Family\", \"Friend\", \"Work\", \"School\", etc.\n- Upcoming birthdays tracking\n\nAuthentication:\n1. For Users:\n- Register a new account using /api/v1/register\n- Login with your credentials at /api/v1/login to get a JWT token\n- Use the token in the Authorization header for protected endpoints\n- Format: \"Bearer <your_jwt_token>\"\n2. For Admins:\n- Use API Key in the X-API-Key header for admin endpoints\n- The API Key should be set in your .env file\n\nEndpoints:\n1. Auth Endpoints (Public):\n- POST /api/v1/register - Create new account\n- POST /api/v1/login - Get JWT token\n2. User Endpoints (Requires JWT):\n- GET /api/v1/users/me - Get own profile\n- PUT /api/v1/users/me - Update own profile\n- DELETE /api/v1/users/me - Delete own account\n3. Admin Endpoints (Requires API Key):\n- GET /api/v1/admin/users - List all users\n- GET /api/v1/admin/users/{id} - Get any user\n- PUT /api/v1/admin/users/{id} - Update any user\n- DELETE /api/v1/admin/users/{id} - Delete any user\n4. Birthday Endpoints (Requires JWT):\n- POST /api/v1/birthdays - Create birthday (with category as string)\n- GET /api/v1/birthdays - List own birthdays\n- GET /api/v1/birthdays/{id} - Get specific birthday\n- PUT /api/v1/birthdays/{id} - Update birthday\n- DELETE /api/v1/birthdays/{id} - Delete birthday\n\nBirthday Categories:\nCategories are now implemented as simple strings. You can use any string value\nfor categorization. Some suggested categories:\n- \"Family\" - For family members\n- \"Friend\" - For friends\n- \"Work\" - For work colleagues\n- \"School\" - For school/university friends\n- \"Other\" - For any other category",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -26,29 +26,26 @@ func NewUserHandler(service *service.UserService, cfg *config.Config) *UserHandl
 func (h *UserHandler) RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api/v1")
 	{
-		// Public routes (no authentication required)
 		api.POST("/register", h.Register)
 		api.POST("/login", h.Login)
 
-		// User routes (require JWT authentication)
 		users := api.Group("/users")
 		users.Use(middleware.JWTAuth(func() []byte {
 			return []byte(h.config.JWTSecret)
 		}))
 		{
-			users.GET("/me", h.GetCurrentUser)         // Get own profile
-			users.PUT("/me", h.UpdateCurrentUser)      // Update own profile
-			users.DELETE("/me", h.DeleteCurrentUser)   // Delete own account
+			users.GET("/me", h.GetCurrentUser)         
+			users.PUT("/me", h.UpdateCurrentUser)      
+			users.DELETE("/me", h.DeleteCurrentUser)   
 		}
 
-		// Admin routes (require API Key)
 		admin := api.Group("/admin")
 		admin.Use(middleware.APIKeyAuth(h.config))
 		{
-			admin.GET("/users", h.GetAllUsers)              // List all users
-			admin.GET("/users/:id", h.GetUserByID)         // Get any user
-			admin.PUT("/users/:id", h.UpdateUser)          // Update any user
-			admin.DELETE("/users/:id", h.DeleteUser)       // Delete any user
+			admin.GET("/users", h.GetAllUsers)              
+			admin.GET("/users/:id", h.GetUserByID)         
+			admin.PUT("/users/:id", h.UpdateUser)         
+			admin.DELETE("/users/:id", h.DeleteUser)      
 		}
 	}
 }
@@ -104,7 +101,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// Check if email already exists
 	existingUser, err := h.service.GetUserByEmail(req.Email)
 	if err == nil && existingUser != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exists"})

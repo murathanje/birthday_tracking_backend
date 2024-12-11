@@ -14,14 +14,12 @@ import (
 
 type BirthdayHandler struct {
 	birthdayService *service.BirthdayService
-	categoryService *service.CategoryService
 	userService     *service.UserService
 }
 
-func NewBirthdayHandler(birthdayService *service.BirthdayService, categoryService *service.CategoryService, userService *service.UserService) *BirthdayHandler {
+func NewBirthdayHandler(birthdayService *service.BirthdayService, userService *service.UserService) *BirthdayHandler {
 	return &BirthdayHandler{
 		birthdayService: birthdayService,
-		categoryService: categoryService,
 		userService:     userService,
 	}
 }
@@ -61,17 +59,9 @@ func (h *BirthdayHandler) CreateBirthday(c *gin.Context) {
 		return
 	}
 
-	// Get user ID from JWT context
 	userID, err := middleware.GetUserID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
-		return
-	}
-
-	// Validate category exists
-	_, err = h.categoryService.GetCategoryByID(req.CategoryID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
 		return
 	}
 
@@ -140,7 +130,6 @@ func (h *BirthdayHandler) GetBirthdayByID(c *gin.Context) {
 		return
 	}
 
-	// Verify ownership
 	userID, _ := middleware.GetUserID(c)
 	if birthday.UserID != userID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
@@ -178,7 +167,6 @@ func (h *BirthdayHandler) UpdateBirthday(c *gin.Context) {
 		return
 	}
 
-	// Get existing birthday and verify ownership
 	birthday, err := h.birthdayService.GetByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Birthday not found"})
@@ -191,7 +179,6 @@ func (h *BirthdayHandler) UpdateBirthday(c *gin.Context) {
 		return
 	}
 
-	// Update fields
 	parts := strings.Split(req.BirthDate, "-")
 	if len(parts) != 2 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid birth date format"})
@@ -213,7 +200,6 @@ func (h *BirthdayHandler) UpdateBirthday(c *gin.Context) {
 	birthday.Name = req.Name
 	birthday.BirthMonth = month
 	birthday.BirthDay = day
-	birthday.CategoryID = req.CategoryID
 	birthday.Notes = req.Notes
 
 	if err := h.birthdayService.Update(birthday); err != nil {
@@ -244,7 +230,6 @@ func (h *BirthdayHandler) DeleteBirthday(c *gin.Context) {
 		return
 	}
 
-	// Get existing birthday and verify ownership
 	birthday, err := h.birthdayService.GetByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Birthday not found"})

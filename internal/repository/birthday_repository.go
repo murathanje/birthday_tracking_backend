@@ -20,13 +20,13 @@ func (r *BirthdayRepository) Create(birthday *models.Birthday) error {
 
 func (r *BirthdayRepository) GetAll() ([]models.Birthday, error) {
 	var birthdays []models.Birthday
-	err := r.db.Preload("Category").Find(&birthdays).Error
+	err := r.db.Find(&birthdays).Error
 	return birthdays, err
 }
 
 func (r *BirthdayRepository) GetByID(id uuid.UUID) (*models.Birthday, error) {
 	var birthday models.Birthday
-	err := r.db.Preload("Category").First(&birthday, "id = ?", id).Error
+	err := r.db.First(&birthday, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -35,9 +35,7 @@ func (r *BirthdayRepository) GetByID(id uuid.UUID) (*models.Birthday, error) {
 
 func (r *BirthdayRepository) GetByUserID(userID uuid.UUID) ([]models.Birthday, error) {
 	var birthdays []models.Birthday
-	err := r.db.Preload("Category").
-		Where("user_id = ?", userID).
-		Find(&birthdays).Error
+	err := r.db.Where("user_id = ?", userID).Find(&birthdays).Error
 	return birthdays, err
 }
 
@@ -49,10 +47,8 @@ func (r *BirthdayRepository) Delete(id uuid.UUID) error {
 	return r.db.Delete(&models.Birthday{}, "id = ?", id).Error
 }
 
-func (r *BirthdayRepository) GetByCategory(categoryID uuid.UUID) ([]models.Birthday, error) {
+func (r *BirthdayRepository) GetByCategory(category string) ([]models.Birthday, error) {
 	var birthdays []models.Birthday
-	err := r.db.Preload("Category").
-		Where("category_id = ?", categoryID).
-		Find(&birthdays).Error
+	err := r.db.Where("category = ?", category).Find(&birthdays).Error
 	return birthdays, err
 } 

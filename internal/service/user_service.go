@@ -30,13 +30,11 @@ func NewUserService(repo *repository.UserRepository, cfg *config.Config) *UserSe
 }
 
 func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.User, error) {
-	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create user with hashed password
 	user := &models.User{
 		Name:         req.Name,
 		Email:        req.Email,
@@ -59,13 +57,11 @@ func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 }
 
 func (s *UserService) UpdateUser(id uuid.UUID, req *models.UpdateUserRequest) (*models.User, error) {
-	// Get existing user
 	user, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if email is being changed and if it's already taken
 	if user.Email != req.Email {
 		existingUser, err := s.repo.GetByEmail(req.Email)
 		if err == nil && existingUser != nil {
@@ -73,11 +69,9 @@ func (s *UserService) UpdateUser(id uuid.UUID, req *models.UpdateUserRequest) (*
 		}
 	}
 
-	// Update basic information
 	user.Name = req.Name
 	user.Email = req.Email
 
-	// Update password if provided
 	if req.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -86,7 +80,6 @@ func (s *UserService) UpdateUser(id uuid.UUID, req *models.UpdateUserRequest) (*
 		user.PasswordHash = string(hashedPassword)
 	}
 
-	// Save changes
 	if err := s.repo.Update(user); err != nil {
 		return nil, err
 	}
@@ -103,18 +96,15 @@ func (s *UserService) GetAllUsers() ([]models.User, error) {
 }
 
 func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
-	// Get user by email
 	user, err := s.repo.GetByEmail(req.Email)
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}
 
-	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		return nil, ErrInvalidCredentials
 	}
 
-	// Generate JWT token
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
 		"email":   user.Email,
@@ -129,14 +119,12 @@ func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, er
 		return nil, err
 	}
 
-	// Create response
 	return &models.LoginResponse{
 		Token: tokenString,
 		User:  *user.ToResponse(),
 	}, nil
 }
 
-// GetJWTSecret returns the JWT signing secret
 func (s *UserService) GetJWTSecret() []byte {
 	return []byte(s.config.JWTSecret)
 } 

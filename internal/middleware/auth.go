@@ -11,7 +11,6 @@ import (
 	"github.com/murathanje/birthday_tracking_backend/internal/config"
 )
 
-// APIKeyAuth creates a middleware for system-level API key authentication
 func APIKeyAuth(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.GetHeader("X-API-Key") // Using X-API-Key header for API key
@@ -31,7 +30,6 @@ func APIKeyAuth(cfg *config.Config) gin.HandlerFunc {
 	}
 }
 
-// JWTAuth creates a middleware for user-level JWT authentication
 func JWTAuth(getSecret func() []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -41,8 +39,6 @@ func JWTAuth(getSecret func() []byte) gin.HandlerFunc {
 			return
 		}
 
-		// Extract the token from the Authorization header
-		// Format: "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
@@ -53,7 +49,6 @@ func JWTAuth(getSecret func() []byte) gin.HandlerFunc {
 		tokenString := parts[1]
 		claims := &jwt.MapClaims{}
 
-		// Parse and validate the token
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return getSecret(), nil
 		})
@@ -64,7 +59,6 @@ func JWTAuth(getSecret func() []byte) gin.HandlerFunc {
 			return
 		}
 
-		// Extract user information from claims
 		userIDStr, ok := (*claims)["user_id"].(string)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
@@ -86,7 +80,6 @@ func JWTAuth(getSecret func() []byte) gin.HandlerFunc {
 			return
 		}
 
-		// Set user information in context
 		c.Set("user_id", userID)
 		c.Set("user_email", email)
 
@@ -94,7 +87,6 @@ func JWTAuth(getSecret func() []byte) gin.HandlerFunc {
 	}
 }
 
-// GetUserID extracts the user ID from the context
 func GetUserID(c *gin.Context) (uuid.UUID, error) {
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -103,7 +95,6 @@ func GetUserID(c *gin.Context) (uuid.UUID, error) {
 	return userID.(uuid.UUID), nil
 }
 
-// RequireOwner creates a middleware for checking if the user is the owner of the resource
 func RequireOwner() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		resourceUserID := c.Param("id")

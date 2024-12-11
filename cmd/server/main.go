@@ -26,8 +26,8 @@ import (
 // @description     Features:
 // @description     - User management with JWT authentication for user operations
 // @description     - API Key authentication for admin operations
-// @description     - Birthday tracking with categories
-// @description     - Category management with icons
+// @description     - Birthday tracking with simple categorization (string-based)
+// @description     - Example categories: "Family", "Friend", "Work", "School", etc.
 // @description     - Upcoming birthdays tracking
 // @description     
 // @description     Authentication:
@@ -39,6 +39,35 @@ import (
 // @description     2. For Admins:
 // @description        - Use API Key in the X-API-Key header for admin endpoints
 // @description        - The API Key should be set in your .env file
+// @description     
+// @description     Endpoints:
+// @description     1. Auth Endpoints (Public):
+// @description        - POST /api/v1/register - Create new account
+// @description        - POST /api/v1/login - Get JWT token
+// @description     2. User Endpoints (Requires JWT):
+// @description        - GET /api/v1/users/me - Get own profile
+// @description        - PUT /api/v1/users/me - Update own profile
+// @description        - DELETE /api/v1/users/me - Delete own account
+// @description     3. Admin Endpoints (Requires API Key):
+// @description        - GET /api/v1/admin/users - List all users
+// @description        - GET /api/v1/admin/users/{id} - Get any user
+// @description        - PUT /api/v1/admin/users/{id} - Update any user
+// @description        - DELETE /api/v1/admin/users/{id} - Delete any user
+// @description     4. Birthday Endpoints (Requires JWT):
+// @description        - POST /api/v1/birthdays - Create birthday (with category as string)
+// @description        - GET /api/v1/birthdays - List own birthdays
+// @description        - GET /api/v1/birthdays/{id} - Get specific birthday
+// @description        - PUT /api/v1/birthdays/{id} - Update birthday
+// @description        - DELETE /api/v1/birthdays/{id} - Delete birthday
+// @description     
+// @description     Birthday Categories:
+// @description     Categories are now implemented as simple strings. You can use any string value
+// @description     for categorization. Some suggested categories:
+// @description     - "Family" - For family members
+// @description     - "Friend" - For friends
+// @description     - "Work" - For work colleagues
+// @description     - "School" - For school/university friends
+// @description     - "Other" - For any other category
 
 // @contact.name   API Support
 // @contact.url    https://github.com/murathanje/birthday_tracking_backend
@@ -70,10 +99,7 @@ import (
 // @tag.description Admin endpoints for user management (requires API Key)
 
 // @tag.name birthdays
-// @tag.description Birthday management endpoints (requires JWT authentication)
-
-// @tag.name categories
-// @tag.description Category management endpoints (requires authentication)
+// @tag.description Birthday management endpoints with string-based categorization (requires JWT authentication)
 
 // @schemes http https
 
@@ -91,18 +117,15 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
-	categoryRepo := repository.NewCategoryRepository(db)
 	birthdayRepo := repository.NewBirthdayRepository(db)
 
 	// Initialize services
 	userService := service.NewUserService(userRepo, cfg)
-	categoryService := service.NewCategoryService(categoryRepo)
 	birthdayService := service.NewBirthdayService(birthdayRepo)
 
 	// Initialize handlers
 	userHandler := handler.NewUserHandler(userService, cfg)
-	categoryHandler := handler.NewCategoryHandler(categoryService)
-	birthdayHandler := handler.NewBirthdayHandler(birthdayService, categoryService, userService)
+	birthdayHandler := handler.NewBirthdayHandler(birthdayService, userService)
 
 	router := gin.New()
 	router.SetTrustedProxies([]string{"127.0.0.1"})
@@ -112,7 +135,6 @@ func main() {
 
 	// Register routes
 	userHandler.RegisterRoutes(router)
-	categoryHandler.RegisterRoutes(router)
 	birthdayHandler.RegisterRoutes(router)
 
 	router.GET("/health", func(c *gin.Context) {

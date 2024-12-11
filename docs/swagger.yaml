@@ -7,9 +7,9 @@ definitions:
         description: '@Description Birthday date (format: MM-DD)'
         example: 05-15
         type: string
-      category_id:
-        description: '@Description Category ID for grouping birthdays'
-        example: 550e8400-e29b-41d4-a716-446655440002
+      category:
+        description: '@Description Category of the birthday'
+        example: Family
         type: string
       created_at:
         description: '@Description When the record was created'
@@ -34,21 +34,6 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
     type: object
-  github_com_murathanje_birthday_tracking_backend_internal_models.Category:
-    description: Category model for grouping birthdays
-    properties:
-      created_at:
-        type: string
-      icon:
-        example: "\U0001F468‍\U0001F469‍\U0001F467‍\U0001F466"
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      name:
-        example: Family
-        type: string
-    type: object
   github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest:
     description: Request model for creating a birthday record
     properties:
@@ -56,9 +41,10 @@ definitions:
         description: '@Description Birthday date (format: MM-DD)'
         example: 05-15
         type: string
-      category_id:
-        description: '@Description Category ID for grouping birthdays'
-        example: 550e8400-e29b-41d4-a716-446655440002
+      category:
+        description: '@Description Category of the birthday (e.g., "Family", "Friend",
+          "Work")'
+        example: Family
         type: string
       name:
         description: '@Description Name of the person'
@@ -70,7 +56,7 @@ definitions:
         type: string
     required:
     - birth_date
-    - category_id
+    - category
     - name
     type: object
   github_com_murathanje_birthday_tracking_backend_internal_models.CreateUserRequest:
@@ -179,8 +165,8 @@ info:
     Features:
     - User management with JWT authentication for user operations
     - API Key authentication for admin operations
-    - Birthday tracking with categories
-    - Category management with icons
+    - Birthday tracking with simple categorization (string-based)
+    - Example categories: "Family", "Friend", "Work", "School", etc.
     - Upcoming birthdays tracking
 
     Authentication:
@@ -192,6 +178,35 @@ info:
     2. For Admins:
     - Use API Key in the X-API-Key header for admin endpoints
     - The API Key should be set in your .env file
+
+    Endpoints:
+    1. Auth Endpoints (Public):
+    - POST /api/v1/register - Create new account
+    - POST /api/v1/login - Get JWT token
+    2. User Endpoints (Requires JWT):
+    - GET /api/v1/users/me - Get own profile
+    - PUT /api/v1/users/me - Update own profile
+    - DELETE /api/v1/users/me - Delete own account
+    3. Admin Endpoints (Requires API Key):
+    - GET /api/v1/admin/users - List all users
+    - GET /api/v1/admin/users/{id} - Get any user
+    - PUT /api/v1/admin/users/{id} - Update any user
+    - DELETE /api/v1/admin/users/{id} - Delete any user
+    4. Birthday Endpoints (Requires JWT):
+    - POST /api/v1/birthdays - Create birthday (with category as string)
+    - GET /api/v1/birthdays - List own birthdays
+    - GET /api/v1/birthdays/{id} - Get specific birthday
+    - PUT /api/v1/birthdays/{id} - Update birthday
+    - DELETE /api/v1/birthdays/{id} - Delete birthday
+
+    Birthday Categories:
+    Categories are now implemented as simple strings. You can use any string value
+    for categorization. Some suggested categories:
+    - "Family" - For family members
+    - "Friend" - For friends
+    - "Work" - For work colleagues
+    - "School" - For school/university friends
+    - "Other" - For any other category
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -541,86 +556,6 @@ paths:
       summary: Update a birthday
       tags:
       - birthdays
-  /categories:
-    get:
-      description: |-
-        Get a list of all birthday categories with their icons
-        Each category includes an ID, name, and an emoji icon
-        Use this endpoint to populate category dropdowns or lists
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get all categories
-      tags:
-      - categories
-  /categories/{id}:
-    get:
-      description: Get a category by its ID
-      parameters:
-      - description: Category ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a category by ID
-      tags:
-      - categories
-  /categories/name/{name}:
-    get:
-      description: Get a category by its name (e.g., 'family', 'friends', etc.)
-      parameters:
-      - description: Category name
-        in: path
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a category by name
-      tags:
-      - categories
   /login:
     post:
       consumes:
@@ -794,7 +729,6 @@ tags:
   name: users
 - description: Admin endpoints for user management (requires API Key)
   name: admin
-- description: Birthday management endpoints (requires JWT authentication)
+- description: Birthday management endpoints with string-based categorization (requires
+    JWT authentication)
   name: birthdays
-- description: Category management endpoints (requires authentication)
-  name: categories

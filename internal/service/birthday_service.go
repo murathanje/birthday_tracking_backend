@@ -35,7 +35,6 @@ func (s *BirthdayService) CreateBirthday(userID uuid.UUID, req *models.CreateBir
 		return nil, fmt.Errorf("invalid day")
 	}
 
-	// Validate day based on month
 	daysInMonth := getDaysInMonth(month)
 	if day > daysInMonth {
 		return nil, fmt.Errorf("invalid day for month %d", month)
@@ -46,7 +45,7 @@ func (s *BirthdayService) CreateBirthday(userID uuid.UUID, req *models.CreateBir
 		Name:       req.Name,
 		BirthMonth: month,
 		BirthDay:   day,
-		CategoryID: req.CategoryID,
+		Category:   req.Category,
 		Notes:      req.Notes,
 	}
 
@@ -73,8 +72,8 @@ func (s *BirthdayService) Delete(id uuid.UUID) error {
 	return s.repo.Delete(id)
 }
 
-func (s *BirthdayService) GetByCategory(categoryID uuid.UUID) ([]models.Birthday, error) {
-	return s.repo.GetByCategory(categoryID)
+func (s *BirthdayService) GetByCategory(category string) ([]models.Birthday, error) {
+	return s.repo.GetByCategory(category)
 }
 
 // Helper function to get days in a month
@@ -83,7 +82,7 @@ func getDaysInMonth(month int) int {
 	case 4, 6, 9, 11:
 		return 30
 	case 2:
-		return 29 // Allowing leap year day
+		return 29
 	default:
 		return 31
 	}
