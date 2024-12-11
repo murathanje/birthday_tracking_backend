@@ -1,0 +1,224 @@
+basePath: /api/v1
+definitions:
+  github_com_murathanje_birthday_tracking_backend_internal_models.Birthday:
+    properties:
+      birth_date:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A birthday tracking service API in Go using Gin framework.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Birthday Tracking API
+  version: "1.0"
+paths:
+  /birthdays:
+    get:
+      description: Get a list of all birthday records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all birthdays
+      tags:
+      - birthdays
+    post:
+      consumes:
+      - application/json
+      description: Create a new birthday record
+      parameters:
+      - description: Birthday object
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new birthday
+      tags:
+      - birthdays
+  /birthdays/{id}:
+    delete:
+      description: Delete a birthday record by its ID
+      parameters:
+      - description: Birthday ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a birthday
+      tags:
+      - birthdays
+    get:
+      description: Get a birthday record by its ID
+      parameters:
+      - description: Birthday ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a birthday by ID
+      tags:
+      - birthdays
+    put:
+      consumes:
+      - application/json
+      description: Update a birthday record by its ID
+      parameters:
+      - description: Birthday ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Birthday object
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a birthday
+      tags:
+      - birthdays
+  /birthdays/upcoming:
+    get:
+      description: Get a list of birthdays in the next 30 days
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get upcoming birthdays
+      tags:
+      - birthdays
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
