@@ -1,6 +1,11 @@
 package service
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/google/uuid"
 	"github.com/murathanje/birthday_tracking_backend/internal/models"
 	"github.com/murathanje/birthday_tracking_backend/internal/repository"
 )
@@ -13,22 +18,73 @@ func NewBirthdayService(repo *repository.BirthdayRepository) *BirthdayService {
 	return &BirthdayService{repo: repo}
 }
 
-func (s *BirthdayService) CreateBirthday(birthday *models.Birthday) error {
-	return s.repo.Create(birthday)
+func (s *BirthdayService) CreateBirthday(userID uuid.UUID, req *models.CreateBirthdayRequest) (*models.Birthday, error) {
+	// Parse birth date (MM-DD format)
+	parts := strings.Split(req.BirthDate, "-")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid birth date format, expected MM-DD")
+	}
+
+	month, err := strconv.Atoi(parts[0])
+	if err != nil || month < 1 || month > 12 {
+		return nil, fmt.Errorf("invalid month")
+	}
+
+	day, err := strconv.Atoi(parts[1])
+	if err != nil || day < 1 || day > 31 {
+		return nil, fmt.Errorf("invalid day")
+	}
+
+	// Validate day based on month
+	daysInMonth := getDaysInMonth(month)
+	if day > daysInMonth {
+		return nil, fmt.Errorf("invalid day for month %d", month)
+	}
+
+	birthday := &models.Birthday{
+		UserID:     userID,
+		Name:       req.Name,
+		BirthMonth: month,
+		BirthDay:   day,
+		CategoryID: req.CategoryID,
+		Notes:      req.Notes,
+	}
+
+	if err := s.repo.Create(birthday); err != nil {
+		return nil, err
+	}
+
+	return birthday, nil
 }
 
-func (s *BirthdayService) GetAllBirthdays() ([]models.Birthday, error) {
-	return s.repo.GetAll()
-}
-
-func (s *BirthdayService) GetBirthdayByID(id uint) (*models.Birthday, error) {
+func (s *BirthdayService) GetByID(id uuid.UUID) (*models.Birthday, error) {
 	return s.repo.GetByID(id)
 }
 
-func (s *BirthdayService) UpdateBirthday(birthday *models.Birthday) error {
+func (s *BirthdayService) GetByUserID(userID uuid.UUID) ([]models.Birthday, error) {
+	return s.repo.GetByUserID(userID)
+}
+
+func (s *BirthdayService) Update(birthday *models.Birthday) error {
 	return s.repo.Update(birthday)
 }
 
-func (s *BirthdayService) DeleteBirthday(id uint) error {
+func (s *BirthdayService) Delete(id uuid.UUID) error {
 	return s.repo.Delete(id)
+}
+
+func (s *BirthdayService) GetByCategory(categoryID uuid.UUID) ([]models.Birthday, error) {
+	return s.repo.GetByCategory(categoryID)
+}
+
+// Helper function to get days in a month
+func getDaysInMonth(month int) int {
+	switch month {
+	case 4, 6, 9, 11:
+		return 30
+	case 2:
+		return 29 // Allowing leap year day
+	default:
+		return 31
+	}
 } 

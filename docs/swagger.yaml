@@ -1,47 +1,342 @@
 basePath: /api/v1
 definitions:
-  github_com_murathanje_birthday_tracking_backend_internal_models.Birthday:
+  github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse:
+    description: Response model for birthday operations
     properties:
       birth_date:
+        description: '@Description Birthday date (format: MM-DD)'
+        example: 05-15
+        type: string
+      category_id:
+        description: '@Description Category ID for grouping birthdays'
+        example: 550e8400-e29b-41d4-a716-446655440002
         type: string
       created_at:
-        type: string
-      deleted_at:
-        $ref: '#/definitions/gorm.DeletedAt'
-      description:
+        description: '@Description When the record was created'
         type: string
       id:
-        type: integer
+        description: '@Description Unique identifier for the birthday record'
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       name:
+        description: '@Description Name of the person'
+        example: John Doe
+        type: string
+      notes:
+        description: '@Description Optional notes about the birthday'
+        example: Best friend from college
         type: string
       updated_at:
+        description: '@Description When the record was last updated'
+        type: string
+      user_id:
+        description: '@Description User ID who owns this birthday record'
+        example: 550e8400-e29b-41d4-a716-446655440001
         type: string
     type: object
-  gorm.DeletedAt:
+  github_com_murathanje_birthday_tracking_backend_internal_models.Category:
+    description: Category model for grouping birthdays
     properties:
-      time:
+      created_at:
         type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
+      icon:
+        example: "\U0001F468‍\U0001F469‍\U0001F467‍\U0001F466"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Family
+        type: string
     type: object
-host: localhost:8080
+  github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest:
+    description: Request model for creating a birthday record
+    properties:
+      birth_date:
+        description: '@Description Birthday date (format: MM-DD)'
+        example: 05-15
+        type: string
+      category_id:
+        description: '@Description Category ID for grouping birthdays'
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      name:
+        description: '@Description Name of the person'
+        example: John Doe
+        type: string
+      notes:
+        description: '@Description Optional notes about the birthday'
+        example: Best friend from college
+        type: string
+    required:
+    - birth_date
+    - category_id
+    - name
+    type: object
+  github_com_murathanje_birthday_tracking_backend_internal_models.CreateUserRequest:
+    description: Request model for user creation
+    properties:
+      email:
+        description: '@Description User''s email address (must be unique)'
+        example: john.smith@example.com
+        type: string
+      name:
+        description: '@Description User''s full name'
+        example: John Smith
+        type: string
+      password:
+        description: |-
+          @Description User's password (minimum 6 characters)
+          @Required
+        example: secretpassword123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  github_com_murathanje_birthday_tracking_backend_internal_models.LoginRequest:
+    description: Request model for user login
+    properties:
+      email:
+        description: '@Description User''s email address'
+        example: john.smith@example.com
+        type: string
+      password:
+        description: '@Description User''s password'
+        example: secretpassword123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_murathanje_birthday_tracking_backend_internal_models.LoginResponse:
+    description: Response model for successful login
+    properties:
+      token:
+        description: '@Description JWT access token'
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
+        description: '@Description Basic user information'
+    type: object
+  github_com_murathanje_birthday_tracking_backend_internal_models.UpdateUserRequest:
+    description: Request model for updating user information
+    properties:
+      email:
+        description: '@Description User''s email address (must be unique)'
+        example: john.smith@example.com
+        type: string
+      name:
+        description: '@Description User''s full name'
+        example: John Smith
+        type: string
+      password:
+        description: '@Description User''s new password (optional, minimum 6 characters
+          if provided)'
+        example: newpassword123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse:
+    description: Response model for user data
+    properties:
+      created_at:
+        description: '@Description When the user was created'
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      email:
+        description: '@Description User''s email address'
+        example: john.smith@example.com
+        type: string
+      id:
+        description: '@Description Unique identifier for the user'
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        description: '@Description User''s full name'
+        example: John Smith
+        type: string
+      updated_at:
+        description: '@Description When the user was last updated'
+        example: "2024-01-01T00:00:00Z"
+        type: string
+    type: object
+host: localhost:5050
 info:
   contact:
-    email: support@swagger.io
+    email: support@example.com
     name: API Support
-    url: http://www.swagger.io/support
-  description: A birthday tracking service API in Go using Gin framework.
+    url: https://github.com/murathanje/birthday_tracking_backend
+  description: |-
+    A birthday tracking service API in Go using Gin framework.
+    Features:
+    - User management with JWT authentication for user operations
+    - API Key authentication for admin operations
+    - Birthday tracking with categories
+    - Category management with icons
+    - Upcoming birthdays tracking
+
+    Authentication:
+    1. For Users:
+    - Register a new account using /api/v1/register
+    - Login with your credentials at /api/v1/login to get a JWT token
+    - Use the token in the Authorization header for protected endpoints
+    - Format: "Bearer <your_jwt_token>"
+    2. For Admins:
+    - Use API Key in the X-API-Key header for admin endpoints
+    - The API Key should be set in your .env file
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
+    name: MIT
+    url: https://opensource.org/licenses/MIT
   title: Birthday Tracking API
   version: "1.0"
 paths:
+  /admin/users:
+    get:
+      description: Get a list of all users (requires API Key)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
+            type: array
+        "401":
+          description: Missing or invalid API Key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: List all users
+      tags:
+      - admin
+  /admin/users/{id}:
+    delete:
+      description: Delete any user account (requires API Key)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Missing or invalid API Key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Delete any user
+      tags:
+      - admin
+    get:
+      description: Get a user by their ID (requires API Key)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
+        "401":
+          description: Missing or invalid API Key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get a user by ID
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update any user's information (requires API Key)
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Missing or invalid API Key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update any user
+      tags:
+      - admin
   /birthdays:
     get:
-      description: Get a list of all birthday records
+      description: Get all birthdays for the authenticated user
       produces:
       - application/json
       responses:
@@ -49,7 +344,217 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get user's birthdays
+      tags:
+      - birthdays
+    post:
+      consumes:
+      - application/json
+      description: Create a new birthday record for the authenticated user
+      parameters:
+      - description: Birthday details
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Create a new birthday
+      tags:
+      - birthdays
+  /birthdays/{id}:
+    delete:
+      description: Delete a birthday record (must belong to authenticated user)
+      parameters:
+      - description: Birthday ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete a birthday
+      tags:
+      - birthdays
+    get:
+      description: Get a birthday record by its ID (must belong to authenticated user)
+      parameters:
+      - description: Birthday ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get a birthday by ID
+      tags:
+      - birthdays
+    put:
+      consumes:
+      - application/json
+      description: Update a birthday record (must belong to authenticated user)
+      parameters:
+      - description: Birthday ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Birthday details
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Update a birthday
+      tags:
+      - birthdays
+  /categories:
+    get:
+      description: |-
+        Get a list of all birthday categories with their icons
+        Each category includes an ID, name, and an emoji icon
+        Use this endpoint to populate category dropdowns or lists
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category'
             type: array
         "500":
           description: Internal Server Error
@@ -57,90 +562,25 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get all birthdays
+      summary: Get all categories
       tags:
-      - birthdays
-    post:
-      consumes:
-      - application/json
-      description: Create a new birthday record
-      parameters:
-      - description: Birthday object
-        in: body
-        name: birthday
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Create a new birthday
-      tags:
-      - birthdays
-  /birthdays/{id}:
-    delete:
-      description: Delete a birthday record by its ID
-      parameters:
-      - description: Birthday ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a birthday
-      tags:
-      - birthdays
+      - categories
+  /categories/{id}:
     get:
-      description: Get a birthday record by its ID
+      description: Get a category by its ID
       parameters:
-      - description: Birthday ID
+      - description: Category ID (UUID)
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category'
         "400":
           description: Bad Request
           schema:
@@ -153,72 +593,208 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Get a birthday by ID
+      summary: Get a category by ID
       tags:
-      - birthdays
+      - categories
+  /categories/name/{name}:
+    get:
+      description: Get a category by its name (e.g., 'family', 'friends', etc.)
+      parameters:
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a category by name
+      tags:
+      - categories
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Authenticate user and return JWT token for accessing protected endpoints
+        The returned token should be included in the Authorization header as "Bearer <token>"
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully authenticated with JWT token
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.LoginResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Invalid email or password
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Register a new user account with email and password
+        After registration, use the /login endpoint to obtain a JWT token
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User successfully registered
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Email already exists
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /users/me:
+    delete:
+      description: Delete the account of the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Missing or invalid JWT token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete current user's account
+      tags:
+      - users
+    get:
+      description: Get the profile of the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile
+          schema:
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
+        "401":
+          description: Missing or invalid JWT token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get current user's profile
+      tags:
+      - users
     put:
       consumes:
       - application/json
-      description: Update a birthday record by its ID
+      description: Update the profile of the currently authenticated user
       parameters:
-      - description: Birthday ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Birthday object
+      - description: User update details
         in: body
-        name: birthday
+        name: user
         required: true
         schema:
-          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+          $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UpdateUserRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Updated profile
           schema:
-            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
+            $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse'
         "400":
-          description: Bad Request
+          description: Invalid request format
           schema:
             additionalProperties:
               type: string
             type: object
-        "500":
-          description: Internal Server Error
+        "401":
+          description: Missing or invalid JWT token
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Update a birthday
+      security:
+      - Bearer: []
+      summary: Update current user's profile
       tags:
-      - birthdays
-  /birthdays/upcoming:
-    get:
-      description: Get a list of birthdays in the next 30 days
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get upcoming birthdays
-      tags:
-      - birthdays
+      - users
+schemes:
+- http
+- https
 securityDefinitions:
+  ApiKeyAuth:
+    description: API Key required for admin operations. Set this in your .env file.
+    in: header
+    name: X-API-Key
+    type: apiKey
   Bearer:
-    description: Type "Bearer" followed by a space and JWT token.
+    description: Type "Bearer" followed by a space and JWT token. Required for user-specific
+      operations.
     in: header
     name: Authorization
     type: apiKey
 swagger: "2.0"
+tags:
+- description: Authentication endpoints for user registration and login
+  name: auth
+- description: User-specific endpoints (requires JWT authentication)
+  name: users
+- description: Admin endpoints for user management (requires API Key)
+  name: admin
+- description: Birthday management endpoints (requires JWT authentication)
+  name: birthdays
+- description: Category management endpoints (requires authentication)
+  name: categories

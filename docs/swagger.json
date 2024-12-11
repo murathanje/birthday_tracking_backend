@@ -1,45 +1,275 @@
 {
+    "schemes": [
+        "http",
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
-        "description": "A birthday tracking service API in Go using Gin framework.",
+        "description": "A birthday tracking service API in Go using Gin framework.\nFeatures:\n- User management with JWT authentication for user operations\n- API Key authentication for admin operations\n- Birthday tracking with categories\n- Category management with icons\n- Upcoming birthdays tracking\n\nAuthentication:\n1. For Users:\n- Register a new account using /api/v1/register\n- Login with your credentials at /api/v1/login to get a JWT token\n- Use the token in the Authorization header for protected endpoints\n- Format: \"Bearer \u003cyour_jwt_token\u003e\"\n2. For Admins:\n- Use API Key in the X-API-Key header for admin endpoints\n- The API Key should be set in your .env file",
         "title": "Birthday Tracking API",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "url": "https://github.com/murathanje/birthday_tracking_backend",
+            "email": "support@example.com"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "localhost:5050",
     "basePath": "/api/v1",
     "paths": {
+        "/admin/users": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a list of all users (requires API Key)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "List all users",
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API Key",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get a user by their ID (requires API Key)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get a user by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API Key",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update any user's information (requires API Key)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Update any user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User update details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated user",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API Key",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete any user account (requires API Key)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Delete any user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid API Key",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/birthdays": {
             "get": {
-                "description": "Get a list of all birthday records",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all birthdays for the authenticated user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "birthdays"
                 ],
-                "summary": "Get all birthdays",
+                "summary": "Get user's birthdays",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
+                                "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -50,7 +280,12 @@
                 }
             },
             "post": {
-                "description": "Create a new birthday record",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new birthday record for the authenticated user",
                 "consumes": [
                     "application/json"
                 ],
@@ -63,12 +298,12 @@
                 "summary": "Create a new birthday",
                 "parameters": [
                     {
-                        "description": "Birthday object",
+                        "description": "Birthday details",
                         "name": "birthday",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest"
                         }
                     }
                 ],
@@ -76,11 +311,20 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -89,39 +333,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/birthdays/upcoming": {
-            "get": {
-                "description": "Get a list of birthdays in the next 30 days",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "birthdays"
-                ],
-                "summary": "Get upcoming birthdays",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                        "description": "Server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -134,7 +346,12 @@
         },
         "/birthdays/{id}": {
             "get": {
-                "description": "Get a birthday record by its ID",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get a birthday record by its ID (must belong to authenticated user)",
                 "produces": [
                     "application/json"
                 ],
@@ -144,7 +361,7 @@
                 "summary": "Get a birthday by ID",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Birthday ID",
                         "name": "id",
                         "in": "path",
@@ -155,7 +372,284 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update a birthday record (must belong to authenticated user)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Update a birthday",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Birthday ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Birthday details",
+                        "name": "birthday",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a birthday record (must belong to authenticated user)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Delete a birthday",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Birthday ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/categories": {
+            "get": {
+                "description": "Get a list of all birthday categories with their icons\nEach category includes an ID, name, and an emoji icon\nUse this endpoint to populate category dropdowns or lists",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get all categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/name/{name}": {
+            "get": {
+                "description": "Get a category by its name (e.g., 'family', 'friends', etc.)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get a category by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/{id}": {
+            "get": {
+                "description": "Get a category by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get a category by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Category ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Category"
                         }
                     },
                     "400": {
@@ -177,9 +671,11 @@
                         }
                     }
                 }
-            },
-            "put": {
-                "description": "Update a birthday record by its ID",
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Authenticate user and return JWT token for accessing protected endpoints\nThe returned token should be included in the Authorization header as \"Bearer \u003ctoken\u003e\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -187,36 +683,29 @@
                     "application/json"
                 ],
                 "tags": [
-                    "birthdays"
+                    "auth"
                 ],
-                "summary": "Update a birthday",
+                "summary": "Login user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Birthday ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Birthday object",
-                        "name": "birthday",
+                        "description": "Login credentials",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.LoginRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully authenticated with JWT token",
                         "schema": {
-                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.Birthday"
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.LoginResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request format",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -224,8 +713,149 @@
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "401": {
+                        "description": "Invalid email or password",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Register a new user account with email and password\nAfter registration, use the /login endpoint to obtain a JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User registration details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User successfully registered",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email already exists",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get the profile of the currently authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get current user's profile",
+                "responses": {
+                    "200": {
+                        "description": "User profile",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update the profile of the currently authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update current user's profile",
+                "parameters": [
+                    {
+                        "description": "User update details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated profile",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -236,26 +866,22 @@
                 }
             },
             "delete": {
-                "description": "Delete a birthday record by its ID",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete the account of the currently authenticated user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "birthdays"
+                    "users"
                 ],
-                "summary": "Delete a birthday",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Birthday ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Delete current user's account",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success message",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -263,17 +889,8 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "401": {
+                        "description": "Missing or invalid JWT token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -286,51 +903,260 @@
         }
     },
     "definitions": {
-        "github_com_murathanje_birthday_tracking_backend_internal_models.Birthday": {
+        "github_com_murathanje_birthday_tracking_backend_internal_models.BirthdayResponse": {
+            "description": "Response model for birthday operations",
             "type": "object",
             "properties": {
                 "birth_date": {
-                    "type": "string"
+                    "description": "@Description Birthday date (format: MM-DD)",
+                    "type": "string",
+                    "example": "05-15"
+                },
+                "category_id": {
+                    "description": "@Description Category ID for grouping birthdays",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
                 },
                 "created_at": {
-                    "type": "string"
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "description": {
+                    "description": "@Description When the record was created",
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "description": "@Description Unique identifier for the birthday record",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
-                    "type": "string"
+                    "description": "@Description Name of the person",
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "notes": {
+                    "description": "@Description Optional notes about the birthday",
+                    "type": "string",
+                    "example": "Best friend from college"
                 },
                 "updated_at": {
+                    "description": "@Description When the record was last updated",
                     "type": "string"
+                },
+                "user_id": {
+                    "description": "@Description User ID who owns this birthday record",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
                 }
             }
         },
-        "gorm.DeletedAt": {
+        "github_com_murathanje_birthday_tracking_backend_internal_models.Category": {
+            "description": "Category model for grouping birthdays",
             "type": "object",
             "properties": {
-                "time": {
+                "created_at": {
                     "type": "string"
                 },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
+                "icon": {
+                    "type": "string",
+                    "example": "👨‍👩‍👧‍👦"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Family"
+                }
+            }
+        },
+        "github_com_murathanje_birthday_tracking_backend_internal_models.CreateBirthdayRequest": {
+            "description": "Request model for creating a birthday record",
+            "type": "object",
+            "required": [
+                "birth_date",
+                "category_id",
+                "name"
+            ],
+            "properties": {
+                "birth_date": {
+                    "description": "@Description Birthday date (format: MM-DD)",
+                    "type": "string",
+                    "example": "05-15"
+                },
+                "category_id": {
+                    "description": "@Description Category ID for grouping birthdays",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "name": {
+                    "description": "@Description Name of the person",
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "notes": {
+                    "description": "@Description Optional notes about the birthday",
+                    "type": "string",
+                    "example": "Best friend from college"
+                }
+            }
+        },
+        "github_com_murathanje_birthday_tracking_backend_internal_models.CreateUserRequest": {
+            "description": "Request model for user creation",
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "description": "@Description User's email address (must be unique)",
+                    "type": "string",
+                    "example": "john.smith@example.com"
+                },
+                "name": {
+                    "description": "@Description User's full name",
+                    "type": "string",
+                    "example": "John Smith"
+                },
+                "password": {
+                    "description": "@Description User's password (minimum 6 characters)\n@Required",
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "secretpassword123"
+                }
+            }
+        },
+        "github_com_murathanje_birthday_tracking_backend_internal_models.LoginRequest": {
+            "description": "Request model for user login",
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "description": "@Description User's email address",
+                    "type": "string",
+                    "example": "john.smith@example.com"
+                },
+                "password": {
+                    "description": "@Description User's password",
+                    "type": "string",
+                    "example": "secretpassword123"
+                }
+            }
+        },
+        "github_com_murathanje_birthday_tracking_backend_internal_models.LoginResponse": {
+            "description": "Response model for successful login",
+            "type": "object",
+            "properties": {
+                "token": {
+                    "description": "@Description JWT access token",
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "description": "@Description Basic user information",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_murathanje_birthday_tracking_backend_internal_models.UpdateUserRequest": {
+            "description": "Request model for updating user information",
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "description": "@Description User's email address (must be unique)",
+                    "type": "string",
+                    "example": "john.smith@example.com"
+                },
+                "name": {
+                    "description": "@Description User's full name",
+                    "type": "string",
+                    "example": "John Smith"
+                },
+                "password": {
+                    "description": "@Description User's new password (optional, minimum 6 characters if provided)",
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "newpassword123"
+                }
+            }
+        },
+        "github_com_murathanje_birthday_tracking_backend_internal_models.UserResponse": {
+            "description": "Response model for user data",
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "@Description When the user was created",
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "email": {
+                    "description": "@Description User's email address",
+                    "type": "string",
+                    "example": "john.smith@example.com"
+                },
+                "id": {
+                    "description": "@Description Unique identifier for the user",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "description": "@Description User's full name",
+                    "type": "string",
+                    "example": "John Smith"
+                },
+                "updated_at": {
+                    "description": "@Description When the user was last updated",
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
                 }
             }
         }
     },
     "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "API Key required for admin operations. Set this in your .env file.",
+            "type": "apiKey",
+            "name": "X-API-Key",
+            "in": "header"
+        },
         "Bearer": {
-            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "description": "Type \"Bearer\" followed by a space and JWT token. Required for user-specific operations.",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
         }
-    }
+    },
+    "tags": [
+        {
+            "description": "Authentication endpoints for user registration and login",
+            "name": "auth"
+        },
+        {
+            "description": "User-specific endpoints (requires JWT authentication)",
+            "name": "users"
+        },
+        {
+            "description": "Admin endpoints for user management (requires API Key)",
+            "name": "admin"
+        },
+        {
+            "description": "Birthday management endpoints (requires JWT authentication)",
+            "name": "birthdays"
+        },
+        {
+            "description": "Category management endpoints (requires authentication)",
+            "name": "categories"
+        }
+    ]
 }

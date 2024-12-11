@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/murathanje/birthday_tracking_backend/docs" // Import swagger docs
+	_ "github.com/murathanje/birthday_tracking_backend/docs"
 	"github.com/murathanje/birthday_tracking_backend/internal/config"
 	"github.com/murathanje/birthday_tracking_backend/internal/handler"
 	"github.com/murathanje/birthday_tracking_backend/internal/middleware"
@@ -23,7 +23,29 @@ import (
 // @title           Birthday Tracking API
 // @version         1.0
 // @description     A birthday tracking service API in Go using Gin framework.
+// @description     Features:
+// @description     - User management with JWT authentication for user operations
+// @description     - API Key authentication for admin operations
+// @description     - Birthday tracking with categories
+// @description     - Category management with icons
+// @description     - Upcoming birthdays tracking
+// @description     
+// @description     Authentication:
+// @description     1. For Users:
+// @description        - Register a new account using /api/v1/register
+// @description        - Login with your credentials at /api/v1/login to get a JWT token
+// @description        - Use the token in the Authorization header for protected endpoints
+// @description        - Format: "Bearer <your_jwt_token>"
+// @description     2. For Admins:
+// @description        - Use API Key in the X-API-Key header for admin endpoints
+// @description        - The API Key should be set in your .env file
 
+// @contact.name   API Support
+// @contact.url    https://github.com/murathanje/birthday_tracking_backend
+// @contact.email  support@example.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
 
 // @host      localhost:5050
 // @BasePath  /api/v1
@@ -31,7 +53,30 @@ import (
 // @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
-// @description Type "Bearer" followed by a space and JWT token.
+// @description Type "Bearer" followed by a space and JWT token. Required for user-specific operations.
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name X-API-Key
+// @description API Key required for admin operations. Set this in your .env file.
+
+// @tag.name auth
+// @tag.description Authentication endpoints for user registration and login
+
+// @tag.name users
+// @tag.description User-specific endpoints (requires JWT authentication)
+
+// @tag.name admin
+// @tag.description Admin endpoints for user management (requires API Key)
+
+// @tag.name birthdays
+// @tag.description Birthday management endpoints (requires JWT authentication)
+
+// @tag.name categories
+// @tag.description Category management endpoints (requires authentication)
+
+// @schemes http https
+
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	cfg := config.LoadConfig()
@@ -44,17 +89,30 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	// Initialize repositories
+	userRepo := repository.NewUserRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
 	birthdayRepo := repository.NewBirthdayRepository(db)
+
+	// Initialize services
+	userService := service.NewUserService(userRepo, cfg)
+	categoryService := service.NewCategoryService(categoryRepo)
 	birthdayService := service.NewBirthdayService(birthdayRepo)
-	birthdayHandler := handler.NewBirthdayHandler(birthdayService)
+
+	// Initialize handlers
+	userHandler := handler.NewUserHandler(userService, cfg)
+	categoryHandler := handler.NewCategoryHandler(categoryService)
+	birthdayHandler := handler.NewBirthdayHandler(birthdayService, categoryService, userService)
 
 	router := gin.New()
 	router.SetTrustedProxies([]string{"127.0.0.1"})
 
-	router.Use(middleware.Logger())
 	router.Use(middleware.Recovery())
 	router.Use(middleware.CORS())
 
+	// Register routes
+	userHandler.RegisterRoutes(router)
+	categoryHandler.RegisterRoutes(router)
 	birthdayHandler.RegisterRoutes(router)
 
 	router.GET("/health", func(c *gin.Context) {
@@ -64,7 +122,6 @@ func main() {
 		})
 	})
 
-	// Swagger documentation endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	serverAddr := fmt.Sprintf(":%d", cfg.ServerPort)

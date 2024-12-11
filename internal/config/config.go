@@ -16,6 +16,8 @@ type Config struct {
 	DBName     string
 	ServerPort int
 	GinMode    string
+	APIKey     string
+	JWTSecret  string
 }
 
 func LoadConfig() *Config {
@@ -42,6 +44,8 @@ func LoadConfig() *Config {
 		DBName:     getEnv("DB_NAME", "birthday_db"),
 		ServerPort: serverPort,
 		GinMode:    getEnv("GIN_MODE", "debug"),
+		APIKey:     getEnv("API_KEY", "default-api-key"),
+		JWTSecret:  getEnv("JWT_SECRET", "default-jwt-secret"),
 	}
 }
 
