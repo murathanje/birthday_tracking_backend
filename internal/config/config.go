@@ -26,27 +26,16 @@ func LoadConfig() *Config {
 		log.Printf("Warning: .env file not found: %v", err)
 	}
 
-	dbPort, err := strconv.Atoi(getEnv("DB_PORT", "5432"))
-	if err != nil {
-		log.Fatalf("Invalid DB_PORT: %v", err)
-	}
-
-	serverPort, err := strconv.Atoi(getEnv("SERVER_PORT", "8080"))
-	if err != nil {
-		log.Fatalf("Invalid SERVER_PORT: %v", err)
-	}
-
-	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     dbPort,
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "birthday_db"),
-		ServerPort: serverPort,
-		GinMode:    getEnv("GIN_MODE", "debug"),
-		APIKey:     getEnv("API_KEY", "default-api-key"),
-		JWTSecret:  getEnv("JWT_SECRET", "default-jwt-secret"),
-	}
+    return &Config{
+        DBHost:     getEnv("DATABASE_HOST", "localhost"),
+        DBUser:     getEnv("DATABASE_USER", "postgres"),
+        DBPassword: getEnv("DATABASE_PASSWORD", ""),
+        DBName:     getEnv("DATABASE_NAME", "birthday_db"),
+        ServerPort: getEnvAsInt("SERVER_PORT", 5050),
+        GinMode:    getEnv("GIN_MODE", "debug"),
+        APIKey:     getEnv("API_KEY", "default-api-key"),
+        JWTSecret:  getEnv("JWT_SECRET", "default-jwt-secret"),
+    }
 }
 
 func getEnv(key, defaultValue string) string {
@@ -55,4 +44,16 @@ func getEnv(key, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+	return intValue
 } 

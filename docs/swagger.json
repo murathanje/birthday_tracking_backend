@@ -18,7 +18,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:5050",
+    "host": "managing-celle-trilema-d4ef42f0.koyeb.app",
     "basePath": "/api/v1",
     "paths": {
         "/admin/users": {

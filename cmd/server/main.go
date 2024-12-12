@@ -29,7 +29,7 @@ import (
 // @description     - Birthday tracking with simple categorization (string-based)
 // @description     - Example categories: "Family", "Friend", "Work", "School", etc.
 // @description     - Upcoming birthdays tracking
-// @description     
+// @description
 // @description     Authentication:
 // @description     1. For Users:
 // @description        - Register a new account using /api/v1/register
@@ -39,7 +39,7 @@ import (
 // @description     2. For Admins:
 // @description        - Use API Key in the X-API-Key header for admin endpoints
 // @description        - The API Key should be set in your .env file
-// @description     
+// @description
 // @description     Endpoints:
 // @description     1. Auth Endpoints (Public):
 // @description        - POST /api/v1/register - Create new account
@@ -59,7 +59,7 @@ import (
 // @description        - GET /api/v1/birthdays/{id} - Get specific birthday
 // @description        - PUT /api/v1/birthdays/{id} - Update birthday
 // @description        - DELETE /api/v1/birthdays/{id} - Delete birthday
-// @description     
+// @description
 // @description     Birthday Categories:
 // @description     Categories are now implemented as simple strings. You can use any string value
 // @description     for categorization. Some suggested categories:
@@ -76,7 +76,7 @@ import (
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
 
-// @host      localhost:5050
+// @host      managing-celle-trilema-d4ef42f0.koyeb.app
 // @BasePath  /api/v1
 
 // @securityDefinitions.apikey Bearer
@@ -107,8 +107,8 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	cfg := config.LoadConfig()
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=require",
+		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

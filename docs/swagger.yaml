@@ -154,7 +154,7 @@ definitions:
         example: "2024-01-01T00:00:00Z"
         type: string
     type: object
-host: localhost:5050
+host: managing-celle-trilema-d4ef42f0.koyeb.app
 info:
   contact:
     email: support@example.com
