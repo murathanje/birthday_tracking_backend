@@ -707,20 +707,7 @@ paths:
       tags:
       - users
 schemes:
-- http
-- https
-securityDefinitions:
-  ApiKeyAuth:
-    description: API Key required for admin operations. Set this in your .env file.
-    in: header
-    name: X-API-Key
-    type: apiKey
-  Bearer:
-    description: Type "Bearer" followed by a space and JWT token. Required for user-specific
-      operations.
-    in: header
-    name: Authorization
-    type: apiKey
+  - https
 swagger: "2.0"
 tags:
 - description: Authentication endpoints for user registration and login
@@ -732,3 +719,14 @@ tags:
 - description: Birthday management endpoints with string-based categorization (requires
     JWT authentication)
   name: birthdays
+securityDefinitions:
+  ApiKeyAuth:
+    description: API Key required for admin operations. Set this in your .env file.
+    in: header
+    name: X-API-Key
+    type: apiKey
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token. Required for user-specific operations.
+    in: header
+    name: Authorization
+    type: apiKey

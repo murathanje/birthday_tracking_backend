@@ -101,7 +101,7 @@ import (
 // @tag.name birthdays
 // @tag.description Birthday management endpoints with string-based categorization (requires JWT authentication)
 
-// @schemes http https
+// @schemes https
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
