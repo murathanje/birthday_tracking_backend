@@ -121,6 +121,75 @@ Access the Swagger UI at: `https://managing-celle-trilema-d4ef42f0.koyeb.app/swa
 | `API_KEY`          | Secret key for admin operations      | `default-api-key` |
 | `JWT_SECRET`       | Secret key for JWT token generation  | `default-jwt-secret` |
 
+## Database Schema
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o{ BIRTHDAYS : "has many"
+    USERS {
+        uuid id PK
+        string name
+        string email UK
+        string password_hash
+        timestamp created_at
+        timestamp updated_at
+    }
+    BIRTHDAYS {
+        uuid id PK
+        uuid user_id FK
+        string name
+        int birth_month
+        int birth_day
+        string category
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+```
+
+### Table Descriptions
+
+#### Users Table
+
+| Column         | Type         | Constraints                | Description                     |
+|---------------|--------------|----------------------------|---------------------------------|
+| id            | UUID         | Primary Key, Auto-generate | Unique user identifier          |
+| name          | VARCHAR(100) | NOT NULL                   | User's full name                |
+| email         | VARCHAR(255) | NOT NULL, UNIQUE           | User's email address            |
+| password_hash | VARCHAR(255) | NOT NULL                   | Hashed user password            |
+| created_at    | TIMESTAMPTZ  | DEFAULT CURRENT_TIMESTAMP  | User account creation timestamp |
+| updated_at    | TIMESTAMPTZ  | DEFAULT CURRENT_TIMESTAMP  | User account last update time   |
+
+#### Birthdays Table
+
+| Column       | Type         | Constraints                | Description                         |
+|-------------|--------------|----------------------------|-------------------------------------|
+| id          | UUID         | Primary Key, Auto-generate | Unique birthday record identifier   |
+| user_id     | UUID         | Foreign Key, NOT NULL      | Reference to Users table           |
+| name        | VARCHAR(100) | NOT NULL                   | Name of the person with birthday    |
+| birth_month | INT          | NOT NULL                   | Month of birth (1-12)               |
+| birth_day   | INT          | NOT NULL                   | Day of birth (1-31)                 |
+| category    | VARCHAR(50)  | NOT NULL                   | Birthday category (e.g., Family)    |
+| notes       | TEXT         | NULLABLE                   | Additional notes about the birthday |
+| created_at  | TIMESTAMPTZ  | DEFAULT CURRENT_TIMESTAMP  | Record creation timestamp          |
+| updated_at  | TIMESTAMPTZ  | DEFAULT CURRENT_TIMESTAMP  | Record last update time            |
+
+### Indices
+
+#### Users Table
+- Unique index on `email` column
+
+#### Birthdays Table
+- Index on `user_id` column
+- Index on `category` column
+
+### Relationships
+- One-to-Many relationship between Users and Birthdays
+- Birthdays are cascaded on user deletion
+
+
 ## Deployment
 
 The application is currently deployed on Koyeb at:
